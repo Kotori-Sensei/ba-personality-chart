@@ -1,6 +1,7 @@
 const MAX_STUDENTS = 5;
-const STORAGE_KEY = 'student-sync-v1';
-const FANDOM_API = 'https://bluearchive.fandom.com/api.php';
+const STORAGE_KEY = 'student-sync-v2';
+const LEGACY_STORAGE_KEY = 'student-sync-v1';
+const ROSTER_FEED = 'https://yuzutrends.app/txt/en/students.txt';
 const COLORS = ['#7960ef', '#f27fa9', '#4cc0b7', '#f2b84b', '#6c9bef'];
 const studentList = document.querySelector('#student-list');
 const studentSearch = document.querySelector('#student-search');
@@ -17,132 +18,89 @@ const legend = document.querySelector('#legend');
 const total = document.querySelector('#match-total');
 const addButton = document.querySelector('#add-button');
 let roster = [];
-let studentImages = new Map();
 let rosterReady = false;
 let selections = loadSelections();
 
+function clamp(value) { return Math.max(0, Math.min(100, Math.round(Number.isFinite(value) ? value : 0))); }
+function escapeHtml(value) { return String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function normalizedTitle(value) { return String(value).replace(/_/g, ' ').trim().toLocaleLowerCase(); }
+function initials(name) { return name.trim().split(/\s+/).map(part => part[0]).slice(0,2).join('').toUpperCase(); }
+function portraitUrl(student) { return student.image || `https://schaledb.com/images/student/collection/${student.id}.webp`; }
+function fallbackPortraitUrl(student) { return `https://raw.githubusercontent.com/SchaleDB/SchaleDB/main/images/student/collection/${student.id}.webp`; }
+function setHint(message, isError = false) { hint.textContent = message; hint.classList.toggle('error', isError); }
+function studentLabel(student) { return student.displayName || student.name; }
+
 function loadSelections() {
   try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    return Array.isArray(saved) ? saved.filter(item => item && typeof item.name === 'string').slice(0, MAX_STUDENTS).map(item => ({name:item.name, score:clamp(Number(item.score) || 0)})) : [];
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY) || '[]');
+    return Array.isArray(saved) ? saved.filter(item => item && (typeof item.name === 'string' || Number.isFinite(Number(item.id))))
+      .slice(0, MAX_STUDENTS).map(item => ({id:Number(item.id) || null, name:String(item.name || ''), score:clamp(Number(item.score) || 0)})) : [];
   } catch { return []; }
 }
-function clamp(value) { return Math.max(0, Math.min(100, Math.round(Number.isFinite(value) ? value : 0))); }
-function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(selections)); } catch { /* Keep the page usable when browser storage is unavailable. */ } }
-function normalizedTitle(value) { return value.replace(/_/g, ' ').trim().toLocaleLowerCase(); }
-function escapeHtml(value) { return value.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function initials(name) { return name.trim().split(/\s+/).map(part => part[0]).slice(0,2).join('').toUpperCase(); }
-function setHint(message, isError) { hint.textContent = message; hint.classList.toggle('error', isError); }
+function save() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(selections)); localStorage.removeItem(LEGACY_STORAGE_KEY); }
+  catch { /* Keep the page usable when browser storage is unavailable. */ }
+}
 
-async function apiRequest(params) {
-  const url = new URL(FANDOM_API);
-  for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value);
-  url.searchParams.set('format', 'json');
-  url.searchParams.set('origin', '*');
+function normalizeRecord(record) {
+  if (Array.isArray(record)) return {id:Number(record[0]), name:String(record[1] || '').trim()};
+  return {id:Number(record?.id), name:String(record?.name || '').trim(), image:record?.image || ''};
+}
+function withUniqueLabels(records) {
+  const counts = new Map();
+  records.forEach(student => counts.set(normalizedTitle(student.name), (counts.get(normalizedTitle(student.name)) || 0) + 1));
+  return records.map(student => ({...student, displayName:counts.get(normalizedTitle(student.name)) > 1 ? `${student.name} · ${student.id}` : student.name}));
+}
+function reconcileSelections() {
+  selections = selections.map(selected => {
+    const match = roster.find(student => selected.id && student.id === selected.id)
+      || roster.find(student => normalizedTitle(student.name) === normalizedTitle(selected.name));
+    return match ? {id:match.id, name:match.name, score:selected.score} : selected;
+  });
+  save();
+}
+function installRoster(records) {
+  const unique = new Map();
+  records.map(normalizeRecord).filter(student => Number.isFinite(student.id) && student.name).forEach(student => unique.set(student.id, student));
+  if (!unique.size) throw new Error('The student source returned an empty list.');
+  roster = withUniqueLabels([...unique.values()].sort((a,b) => a.name.localeCompare(b.name) || a.id - b.id));
+  rosterReady = true;
+  reconcileSelections();
+  studentOptions.innerHTML = roster.map(student => `<option value="${escapeHtml(studentLabel(student))}"></option>`).join('');
+  render();
+}
+
+function parseStudentFeed(text) {
+  const lines = text.split(/\r?\n/).filter(line => line && !line.startsWith('#'));
+  const header = lines.shift()?.split('\t');
+  if (!header || header[0] !== 'Id' || header[1] !== 'Name') throw new Error('The student feed format was not recognized.');
+  return lines.map(line => {
+    const [id, name] = line.split('\t');
+    return {id:Number(id), name};
+  }).filter(student => Number.isFinite(student.id) && student.name);
+}
+async function fetchCurrentRoster() {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 12000);
   try {
-    const response = await fetch(url, {signal:controller.signal, credentials:'omit'});
-    if (!response.ok) throw new Error(`Fandom API returned ${response.status}`);
-    const data = await response.json();
-    if (data.error) throw new Error(data.error.info || 'Fandom API returned an error');
-    return data;
+    const response = await fetch(ROSTER_FEED, {signal:controller.signal, cache:'no-cache', credentials:'omit'});
+    if (!response.ok) throw new Error(`Student feed returned ${response.status}.`);
+    const records = parseStudentFeed(await response.text());
+    if (records.length < 100) throw new Error('The student feed was incomplete.');
+    return records;
   } finally { clearTimeout(timeout); }
 }
 
-function choosePageImage(title, files) {
-  if (!files?.length) return null;
-  const normalizeFile = value => normalizedTitle(value.split(':').pop().replace(/\.[^.]+$/, '')).replace(/[^a-z0-9]/g, '');
-  const target = normalizeFile(title);
-  let best = null;
-  let bestScore = 0;
-  for (const file of files) {
-    const candidate = normalizeFile(file.title || '');
-    if (!candidate) continue;
-    let score = 0;
-    if (candidate === target) score = 100;
-    else if (candidate.startsWith(target)) score = 80;
-    else if (candidate.includes(target)) score = 60;
-    else if (target.startsWith(candidate) && candidate.length >= 5) score = 35;
-    if (score > bestScore) { best = file.title; bestScore = score; }
-  }
-  // PageImages is the preferred portrait. If that is absent, use a filename that
-  // clearly identifies the student instead of guessing among logos and UI art.
-  return best;
-}
-
-async function fetchWikiRoster() {
-  const titles = [];
-  let continuation = null;
-  let pagesRead = 0;
-  do {
-    const params = {action:'query', list:'categorymembers', cmtitle:'Category:Students', cmtype:'page', cmnamespace:'0', cmlimit:'max'};
-    if (continuation) Object.entries(continuation).forEach(([key,value]) => params[key] = value);
-    const data = await apiRequest(params);
-    const members = data.query?.categorymembers || [];
-    titles.push(...members.filter(page => page.ns === 0).map(page => page.title));
-    continuation = data.continue || null;
-    pagesRead += 1;
-    if (pagesRead > 100) throw new Error('The student list pagination limit was reached.');
-  } while (continuation);
-
-  const uniqueTitles = [...new Set(titles.map(title => title.replace(/_/g, ' ')))].sort((a,b) => a.localeCompare(b));
-  if (!uniqueTitles.length) throw new Error('The Fandom category returned no student pages.');
-
-  const images = new Map();
-  let imageError = false;
-  const imageFilesByStudent = new Map();
-  // PageImages gives the wiki's chosen page thumbnail. Also request page image
-  // files so there is a second route when a page has no PageImages thumbnail.
-  for (let i=0; i<uniqueTitles.length; i+=50) {
-    const batch = uniqueTitles.slice(i, i+50);
-    let data;
-    try {
-      data = await apiRequest({action:'query', prop:'pageimages|images', piprop:'thumbnail', pithumbsize:'240', imlimit:'max', redirects:'1', titles:batch.join('|')});
-    } catch {
-      imageError = true;
-      try {
-        data = await apiRequest({action:'query', prop:'images', imlimit:'max', redirects:'1', titles:batch.join('|')});
-      } catch { imageError = true; continue; }
-    }
-    for (const page of Object.values(data.query?.pages || {})) {
-      const imageUrl = page.thumbnail?.source || page.original?.source;
-      if (imageUrl) images.set(normalizedTitle(page.title), imageUrl);
-      else {
-        const matchingFile = choosePageImage(page.title, page.images);
-        if (matchingFile) imageFilesByStudent.set(normalizedTitle(page.title), matchingFile);
-      }
-    }
-  }
-
-  const fileTitles = [...new Set(imageFilesByStudent.values())];
-  const fileUrls = new Map();
-  for (let i=0; i<fileTitles.length; i+=50) {
-    const batch = fileTitles.slice(i, i+50);
-    try {
-      const data = await apiRequest({action:'query', prop:'imageinfo', iiprop:'url', iiurlwidth:'240', titles:batch.join('|')});
-      for (const page of Object.values(data.query?.pages || {})) {
-        const image = page.imageinfo?.[0];
-        const imageUrl = image?.thumburl || image?.url;
-        if (imageUrl) fileUrls.set(normalizedTitle(page.title), imageUrl);
-      }
-    } catch { imageError = true; }
-  }
-  for (const [student, fileTitle] of imageFilesByStudent) {
-    const imageUrl = fileUrls.get(normalizedTitle(fileTitle));
-    if (imageUrl && !images.has(student)) images.set(student, imageUrl);
-  }
-  return {students:uniqueTitles, images, imageError};
-}
-
-function addStudent(name) {
-  const match = roster.find(item => item.toLocaleLowerCase() === name.trim().toLocaleLowerCase());
+function addStudent(input) {
+  const query = input.trim();
+  const match = roster.find(student => normalizedTitle(studentLabel(student)) === normalizedTitle(query))
+    || roster.find(student => normalizedTitle(student.name) === normalizedTitle(query));
   if (!match) { setHint('Choose a name from the student list to add it.', true); return false; }
-  if (selections.some(item => item.name === match)) { setHint(`${match} is already in your lineup.`, true); return false; }
+  if (selections.some(item => item.id === match.id)) { setHint(`${studentLabel(match)} is already in your lineup.`, true); return false; }
   if (selections.length >= MAX_STUDENTS) { setHint('Your lineup is full. Remove a student to add another.', true); return false; }
-  selections.push({name:match, score:50});
+  selections.push({id:match.id, name:match.name, score:50});
   save(); render();
-  setHint(`${match} added. Set the slider to your similarity rating.`, false);
+  setHint(`${studentLabel(match)} added. Set the slider to your similarity rating.`);
   return true;
 }
 
@@ -152,19 +110,21 @@ function render() {
   emptyState.hidden = selections.length > 0;
   studentList.innerHTML = selections.map((item, index) => {
     const color = COLORS[index % COLORS.length];
-    const safeName = escapeHtml(item.name);
-    const image = studentImages.get(normalizedTitle(item.name));
+    const student = roster.find(candidate => candidate.id === item.id) || item;
+    const name = studentLabel(student);
+    const safeName = escapeHtml(name);
+    const image = student.id ? portraitUrl(student) : '';
     const id = `score-${index}`;
     return `<article class="student-card">
-      <div class="student-avatar" style="background:${color}"><span aria-hidden="true">${escapeHtml(initials(item.name))}</span>${image ? `<img src="${escapeHtml(image)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ''}</div>
+      <div class="student-avatar" style="background:${color}"><span aria-hidden="true">${escapeHtml(initials(item.name))}</span>${image ? `<img src="${escapeHtml(image)}" data-fallback="${escapeHtml(fallbackPortraitUrl(student))}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ''}</div>
       <div><div class="student-name">${safeName}</div><div class="student-label">Your similarity rating</div></div>
       <button type="button" class="remove-button" aria-label="Remove ${safeName}" data-remove="${index}">×</button>
       <div class="score-line"><label class="sr-only" for="${id}">How much you relate to ${safeName}</label><input class="slider" id="${id}" type="range" min="0" max="100" value="${item.score}" style="--fill:${item.score}%" data-score="${index}"><output class="score-value" for="${id}">${item.score}<small>%</small></output></div>
     </article>`;
   }).join('');
-  studentList.querySelectorAll('.student-avatar img').forEach(image => image.addEventListener('error', () => image.remove(), {once:true}));
+  attachImageFallbacks(studentList);
   studentList.querySelectorAll('[data-remove]').forEach(button => button.addEventListener('click', () => {
-    const removed = selections.splice(Number(button.dataset.remove), 1)[0]; save(); render(); setHint(`${removed.name} removed from your lineup.`, false);
+    const removed = selections.splice(Number(button.dataset.remove), 1)[0]; save(); render(); setHint(`${removed.name} removed from your lineup.`);
   }));
   studentList.querySelectorAll('[data-score]').forEach(slider => slider.addEventListener('input', () => {
     const index = Number(slider.dataset.score);
@@ -176,24 +136,36 @@ function render() {
   renderChart();
 }
 
+function attachImageFallbacks(container) {
+  container.querySelectorAll('img').forEach(image => image.addEventListener('error', () => {
+    const backup = image.dataset.fallback;
+    if (backup && image.src !== backup) { image.dataset.fallback = ''; image.src = backup; }
+    else image.remove();
+  }));
+}
+
 function renderOrbitStudents(sum) {
   const orbitSize = orbitStudents.parentElement.clientWidth || 288;
-  const radius = Math.max(0, (orbitSize - 80) / 2 - 1);
+  const radius = Math.max(0, (orbitSize - 82) / 2);
+  let angle = -Math.PI / 2;
   orbitStudents.setAttribute('role', 'list');
   orbitStudents.innerHTML = selections.map((item, index) => {
-    const angle = -Math.PI / 2 + (Math.PI * 2 * index / selections.length);
-    const left = orbitSize / 2 + radius * Math.cos(angle);
-    const top = orbitSize / 2 + radius * Math.sin(angle);
+    const portion = sum ? item.score / sum : 1 / Math.max(1, selections.length);
+    const midpoint = angle + portion * Math.PI;
+    const left = orbitSize / 2 + radius * Math.cos(midpoint);
+    const top = orbitSize / 2 + radius * Math.sin(midpoint);
+    angle += sum ? portion * Math.PI * 2 : portion * Math.PI * 2;
     const color = COLORS[index % COLORS.length];
-    const portion = sum ? Math.round((item.score / sum) * 100) : 0;
-    const image = studentImages.get(normalizedTitle(item.name));
-    const safeName = escapeHtml(item.name);
-    return `<div class="orbit-student" role="listitem" style="left:${left}px;top:${top}px;--student-color:${color}" aria-label="${safeName}, ${portion}% of your chart">
-      <span class="orbit-avatar" style="background:${color}"><span aria-hidden="true">${escapeHtml(initials(item.name))}</span>${image ? `<img src="${escapeHtml(image)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ''}</span>
+    const pct = sum ? Math.round((item.score / sum) * 100) : 0;
+    const student = roster.find(candidate => candidate.id === item.id) || item;
+    const safeName = escapeHtml(studentLabel(student));
+    const image = student.id ? portraitUrl(student) : '';
+    return `<div class="orbit-student" role="listitem" style="left:${left}px;top:${top}px;--student-color:${color}" aria-label="${safeName}, ${pct}% of your chart">
+      <span class="orbit-avatar" style="background:${color}"><span aria-hidden="true">${escapeHtml(initials(item.name))}</span>${image ? `<img src="${escapeHtml(image)}" data-fallback="${escapeHtml(fallbackPortraitUrl(student))}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ''}</span>
       <span class="orbit-name">${safeName}</span>
     </div>`;
   }).join('');
-  orbitStudents.querySelectorAll('.orbit-avatar img').forEach(image => image.addEventListener('error', () => image.remove(), {once:true}));
+  attachImageFallbacks(orbitStudents);
 }
 
 function renderChart() {
@@ -205,8 +177,8 @@ function renderChart() {
   total.textContent = sum;
   legend.innerHTML = selections.map((item, i) => {
     const portion = sum ? item.score / sum : 0;
-    const pct = Math.round(portion * 100);
-    return `<div class="legend-row"><span class="legend-dot" style="background:${COLORS[i % COLORS.length]}"></span><span class="legend-name">${escapeHtml(item.name)}</span><span class="legend-percent">${pct}%</span></div>`;
+    const student = roster.find(candidate => candidate.id === item.id) || item;
+    return `<div class="legend-row"><span class="legend-dot" style="background:${COLORS[i % COLORS.length]}"></span><span class="legend-name">${escapeHtml(studentLabel(student))}</span><span class="legend-percent">${Math.round(portion * 100)}%</span></div>`;
   }).join('');
   renderOrbitStudents(sum);
   pie.innerHTML = '';
@@ -240,38 +212,31 @@ function sectorPath(cx, cy, radius, start, end) {
 form.addEventListener('submit', event => {
   event.preventDefault();
   if (selections.length >= MAX_STUDENTS) { setHint('Your lineup is full. Remove a student to add another.', true); return; }
-  const added = addStudent(studentSearch.value);
-  if (added) studentSearch.value = '';
+  if (addStudent(studentSearch.value)) studentSearch.value = '';
 });
 document.querySelector('#reset-button').addEventListener('click', () => {
-  selections = []; localStorage.removeItem(STORAGE_KEY); studentSearch.value = ''; setHint('Your lineup is clear. Choose some students to begin.', false); render();
+  selections = []; localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(LEGACY_STORAGE_KEY); studentSearch.value = ''; setHint('Your lineup is clear. Choose some students to begin.'); render();
 });
 
 async function loadRoster() {
-  setHint('Loading the complete student list and portraits from Fandom…', false);
+  setHint('Loading the complete student list…');
+  let bundledError = null;
   try {
-    const data = await fetchWikiRoster();
-    roster = data.students;
-    studentImages = data.images;
-    rosterReady = true;
-    const savedNames = selections.map(item => item.name);
-    roster = [...new Set([...roster, ...savedNames])];
-    studentOptions.innerHTML = roster.map(name => `<option value="${escapeHtml(name)}"></option>`).join('');
-    render();
-    setHint(`Loaded ${data.students.length} student pages and ${data.images.size} portraits from the Fandom wiki.${data.imageError ? ' Some portraits could not be retrieved.' : ''}`, data.imageError);
+    const response = await fetch('data/students.json', {cache:'no-cache'});
+    if (!response.ok) throw new Error('Could not load the bundled student list.');
+    const bundled = await response.json();
+    installRoster(bundled.students || bundled);
+    setHint(`Loaded ${roster.length} playable roster entries with portraits. Checking for updates…`);
+  } catch (error) { bundledError = error; }
+
+  try {
+    const current = await fetchCurrentRoster();
+    installRoster(current);
+    setHint(`Loaded ${roster.length} playable roster entries and portraits. The list is up to date.`);
   } catch (error) {
-    try {
-      const response = await fetch('data/students.json');
-      if (!response.ok) throw new Error('Could not load the bundled roster.');
-      const fallback = await response.json();
-      roster = [...new Set([...fallback, ...selections.map(item => item.name)])].sort((a,b) => a.localeCompare(b));
-      rosterReady = true;
-      studentOptions.innerHTML = roster.map(name => `<option value="${escapeHtml(name)}"></option>`).join('');
-      render();
-      setHint(`Fandom could not be reached, so the starter list is shown (${roster.length} names). ${error.name === 'AbortError' ? 'The request timed out.' : 'Portraits may be unavailable.'}`, true);
-    } catch (fallbackError) {
-      setHint('Neither the Fandom API nor the bundled list could be loaded. Try refreshing the page.', true);
-    }
+    if (rosterReady) setHint(`Loaded all ${roster.length} bundled playable roster entries and their portraits. Live updates are unavailable right now.`);
+    else setHint('The student list could not be loaded. Check your connection and refresh the page.', true);
+    if (bundledError) console.error('Roster load failed:', bundledError, error);
   }
 }
 
