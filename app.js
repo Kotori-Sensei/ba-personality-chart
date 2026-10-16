@@ -547,71 +547,134 @@ function canvasRoundRect(context, x, y, width, height, radius) {
   context.roundRect(x, y, width, height, radius);
 }
 
+function wrapCanvasText(context, text, maxWidth) {
+  const words = String(text).split(/\s+/);
+  const lines = [];
+  let line = '';
+  for (const word of words) {
+    const test = line ? `${line} ${word}` : word;
+    if (line && context.measureText(test).width > maxWidth) {
+      lines.push(line);
+      line = word;
+    } else line = test;
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
 async function exportChartPng() {
   if (!selections.length) return;
   savePngButton.disabled = true;
   savePngButton.textContent = 'Preparing…';
   try {
-    const entries = await Promise.all(selections.map(async (entry, index) => ({
+    const entries = selections.map((entry, index) => ({
       ...entry,
       label: studentLabel(roster.find(candidate => candidate.id === entry.id) || entry),
       color: COLORS[index % COLORS.length],
-      image: await loadPortrait(roster.find(candidate => candidate.id === entry.id) || entry)
-    })));
+      image: null
+    }));
+    let portraitIndex = 0;
+    await Promise.all(Array.from({length:Math.min(6, entries.length)}, async () => {
+      while (portraitIndex < entries.length) {
+        const index = portraitIndex++;
+        const student = roster.find(candidate => candidate.id === entries[index].id) || entries[index];
+        entries[index].image = await loadPortrait(student);
+      }
+    }));
     const sum = selections.reduce((result, item) => result + item.score, 0);
-    const width = 1000;
-    const columns = width < 700 ? 1 : 2;
-    const rows = Math.ceil(entries.length / columns);
-    const height = 510 + rows * 66 + 48;
+    const orbitSize = Math.max(288, Math.ceil((76 * entries.length) / Math.PI));
+    const width = orbitSize + 40;
+    const chartTitle = resultTitle.textContent;
+    const titleFont = '600 18px Space Grotesk, Arial, sans-serif';
+    const measureCanvas = document.createElement('canvas');
+    const measure = measureCanvas.getContext('2d');
+    measure.font = titleFont;
+    const titleLines = wrapCanvasText(measure, chartTitle, width - 32);
+    const titleHeight = Math.max(24, titleLines.length * 23);
+    const orbitTop = titleHeight + 22;
+    const legendTop = orbitTop + orbitSize + 15;
+    const legendRowHeight = 17;
+    const height = legendTop + entries.length * legendRowHeight + 20;
+    const scale = Math.min(3, 16000 / Math.max(width, height));
     const canvas = document.createElement('canvas');
-    canvas.width = width * 2;
-    canvas.height = height * 2;
+    canvas.width = width * scale;
+    canvas.height = height * scale;
     const ctx = canvas.getContext('2d');
-    ctx.scale(2, 2);
-    ctx.fillStyle = '#f8f7fc'; ctx.fillRect(0, 0, width, height);
-    ctx.fillStyle = '#292643'; ctx.font = '700 30px Arial, sans-serif';
-    ctx.textAlign = 'center'; ctx.fillText(resultTitle.textContent, width / 2, 48, width - 80);
+    ctx.scale(scale, scale);
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, width, height);
+    const background = ctx.createRadialGradient(width / 2, orbitTop + orbitSize * .44, 0, width / 2, orbitTop + orbitSize * .44, orbitSize * .7);
+    background.addColorStop(0, '#f7f5ff'); background.addColorStop(1, '#fff');
+    ctx.fillStyle = background; ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = '#393451'; ctx.font = titleFont;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    titleLines.forEach((line, index) => ctx.fillText(line, width / 2, 8 + index * 23));
 
-    const cx = width / 2, cy = 270, radius = 176;
-    const startAt = -Math.PI / 2;
+    // Mirror the preview's chart diameter, marker ring, and label positions.
+    const cx = width / 2, cy = orbitTop + orbitSize / 2;
+    const radius = orbitSize * .58 * (92 / 240);
+    const markerRadius = (orbitSize - 86) / 2;
+    const chartStart = -Math.PI / 2;
     if (!sum) {
       ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI * 2); ctx.fillStyle = '#e9e6f2'; ctx.fill();
     } else {
-      let angle = startAt;
+      let angle = chartStart;
       entries.forEach(entry => {
         if (!entry.score) return;
         const portion = entry.score / sum;
         const end = angle + portion * Math.PI * 2;
         ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, radius, angle, end); ctx.closePath();
-        ctx.fillStyle = entry.color; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.stroke();
+        ctx.fillStyle = entry.color; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
         const middle = angle + (end - angle) / 2;
-        const labelRadius = Math.min(radius * 0.58, Math.max(radius * 0.35, radius * (0.62 - entries.length * 0.006)));
+        const labelRadius = radius * (56 / 92);
         const text = `${Math.round(portion * 100)}%`;
-        ctx.fillStyle = '#fff'; ctx.font = `700 ${Math.max(8, Math.min(18, 18 - entries.length * 0.2))}px Arial, sans-serif`;
+        ctx.fillStyle = '#fff'; ctx.font = `800 ${Math.max(5, Math.min(12, 12 - entries.length * 0.18))}px DM Sans, Arial, sans-serif`;
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillText(text, cx + Math.cos(middle) * labelRadius, cy + Math.sin(middle) * labelRadius);
         angle = end;
       });
     }
-    const cellWidth = width / columns;
-    entries.forEach((entry, index) => {
-      const col = index % columns;
-      const row = Math.floor(index / columns);
-      const x = col * cellWidth + 24;
-      const y = 460 + row * 66;
-      ctx.fillStyle = '#fff'; canvasRoundRect(ctx, x, y, cellWidth - 48, 54, 12); ctx.fill();
-      ctx.fillStyle = entry.color; canvasRoundRect(ctx, x + 12, y + 10, 34, 34, 10); ctx.fill();
-      if (entry.image) {
-        ctx.save(); canvasRoundRect(ctx, x + 12, y + 10, 34, 34, 10); ctx.clip(); ctx.drawImage(entry.image, x + 12, y + 10, 34, 34); ctx.restore();
-      } else {
-        ctx.fillStyle = '#fff'; ctx.font = '700 10px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(initials(entry.label), x + 29, y + 27);
+    let markerAngle = chartStart;
+    entries.forEach(entry => {
+      const portion = sum ? entry.score / sum : 1 / entries.length;
+      const middle = markerAngle + portion * Math.PI;
+      const markerX = cx + markerRadius * Math.cos(middle);
+      const markerY = cy + markerRadius * Math.sin(middle);
+      markerAngle += portion * Math.PI * 2;
+
+      const cardX = markerX - 38, cardY = markerY - 31.5;
+      ctx.save(); ctx.shadowColor = 'rgba(53,43,103,.10)'; ctx.shadowBlur = 9; ctx.shadowOffsetY = 3;
+      ctx.fillStyle = '#fff'; ctx.strokeStyle = '#ece9f5'; ctx.lineWidth = 1;
+      canvasRoundRect(ctx, cardX, cardY, 76, 63, 10); ctx.fill(); ctx.stroke(); ctx.restore();
+
+      const avatarX = markerX - 16.5, avatarY = cardY + 3;
+      ctx.save();
+      ctx.beginPath(); ctx.arc(markerX, avatarY + 16.5, 16.5, 0, Math.PI * 2); ctx.clip();
+      ctx.fillStyle = entry.color; ctx.fillRect(avatarX, avatarY, 33, 33);
+      if (entry.image) ctx.drawImage(entry.image, avatarX, avatarY, 33, 33);
+      else {
+        ctx.fillStyle = '#fff'; ctx.font = '700 10px Space Grotesk, Arial, sans-serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(initials(entry.label), markerX, avatarY + 16.5);
       }
-      ctx.fillStyle = '#5d5974'; ctx.font = '700 14px Arial, sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-      ctx.fillText(entry.label, x + 56, y + 27, cellWidth - 150);
-      ctx.fillStyle = '#37334f'; ctx.font = '700 14px Arial, sans-serif'; ctx.textAlign = 'right';
-      ctx.fillText(`${sum ? Math.round(entry.score / sum * 100) : 0}%`, x + cellWidth - 62, y + 27);
+      ctx.restore();
+      ctx.beginPath(); ctx.arc(markerX, avatarY + 16.5, 16.5, 0, Math.PI * 2);
+      ctx.strokeStyle = entry.color; ctx.lineWidth = 2; ctx.stroke();
+
+      ctx.fillStyle = '#5d5974'; ctx.font = '700 8px DM Sans, Arial, sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      const nameLines = wrapCanvasText(ctx, entry.label, 68).slice(0, 2);
+      nameLines.forEach((line, lineIndex) => ctx.fillText(line, markerX, cardY + 38 + lineIndex * 9, 68));
     });
+
+    // Include the same legend as the preview, with all rows available in the PNG.
+    entries.forEach((entry, index) => {
+      const y = legendTop + index * legendRowHeight;
+      ctx.beginPath(); ctx.roundRect(16, y + 4, 8, 8, 3); ctx.fillStyle = entry.color; ctx.fill();
+      ctx.fillStyle = '#77738b'; ctx.font = '600 10px DM Sans, Arial, sans-serif';
+      ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(entry.label, 32, y + 8, width - 84);
+      ctx.fillStyle = '#37334f'; ctx.font = '800 10px Space Grotesk, Arial, sans-serif'; ctx.textAlign = 'right';
+      ctx.fillText(`${sum ? Math.round(entry.score / sum * 100) : 0}%`, width - 16, y + 8);
+    });
+
     const anchor = document.createElement('a');
     anchor.download = `${(chartName.value.trim() || 'your').replace(/[^a-z0-9-_]+/gi, '-').toLowerCase()}-blue-archive-personality-mix.png`;
     anchor.href = canvas.toDataURL('image/png');
