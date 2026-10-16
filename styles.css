@@ -24,7 +24,7 @@
 .chart-content{width:100%;padding-top:0}
 .chart-scroll{width:100%;overflow-x:auto;overflow-y:hidden;padding:0 2px 8px;scrollbar-color:#d9d3f2 transparent;scrollbar-width:thin}
 .chart-orbit{width:288px;max-width:none;flex:0 0 auto}
-.chart-wrap{width:58%;height:58%}
+.chart-wrap{width:42%;height:42%}
 .chart-wrap svg{transform:rotate(-90deg)}
 .slice-percent{fill:#fff;font-family:'DM Sans',sans-serif;font-weight:800;paint-order:stroke;stroke:#0002;stroke-width:1px}
 .chart-center,.match-total,.result-bottom{display:none!important}

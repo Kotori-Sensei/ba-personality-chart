@@ -506,8 +506,7 @@ form.addEventListener('submit', event => {
   if (addStudent(studentSearch.value)) studentSearch.value = '';
 });
 chartName.addEventListener('input', () => {
-  const name = chartName.value.trim();
-  resultTitle.textContent = `${name ? `${name} ` : ''}Blue Archive Personality Mix`;
+  resultTitle.textContent = chartName.value.trim() || 'Your Blue Archive Personality Mix';
 });
 document.querySelector('#reset-button').addEventListener('click', () => {
   selections = []; localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(LEGACY_STORAGE_KEY); studentSearch.value = ''; setHint('Your lineup is clear. Choose some students to begin.'); render();
@@ -584,7 +583,7 @@ async function exportChartPng() {
     const sum = selections.reduce((result, item) => result + item.score, 0);
     const orbitSize = Math.max(288, Math.ceil((76 * entries.length) / Math.PI));
     const width = orbitSize + 40;
-    const chartTitle = resultTitle.textContent;
+    const chartTitle = chartName.value.trim() || 'Your Blue Archive Personality Mix';
     const titleFont = '600 18px Space Grotesk, Arial, sans-serif';
     const measureCanvas = document.createElement('canvas');
     const measure = measureCanvas.getContext('2d');
@@ -611,7 +610,7 @@ async function exportChartPng() {
 
     // Mirror the preview's chart diameter, marker ring, and label positions.
     const cx = width / 2, cy = orbitTop + orbitSize / 2;
-    const radius = orbitSize * .58 * (92 / 240);
+    const radius = orbitSize * .42 * (92 / 240);
     const markerRadius = (orbitSize - 86) / 2;
     const chartStart = -Math.PI / 2;
     if (!sum) {
