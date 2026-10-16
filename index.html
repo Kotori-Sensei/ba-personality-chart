@@ -4,24 +4,22 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f5f3ff">
-  <meta name="description" content="Choose up to five Blue Archive students and build a personal personality-match pie chart.">
-  <title>Student Sync — Blue Archive Personality Match</title>
-  <link rel="stylesheet" href="styles.css?v=3">
+  <meta name="description" content="Choose Blue Archive students, rate how much you relate to each, and build your personal personality mix.">
+  <title>Kotori's Blue Archive Personality Tool</title>
+  <link rel="stylesheet" href="styles.css?v=4">
 </head>
 <body>
   <main class="page-shell">
     <header class="topbar">
-      <a class="brand" href="#top" aria-label="Student Sync home">
-        <span class="brand-mark" aria-hidden="true">✦</span>
-        <span>STUDENT <b>SYNC</b></span>
+      <a class="brand" href="#top" aria-label="Kotori's Blue Archive Personality Tool home">
+        <span>Kotori's Blue Archive Personality Tool</span>
       </a>
-      <span class="top-note"><span class="status-dot"></span> Your picks stay on this device</span>
+      <img class="top-kotori" src="https://schaledb.com/images/student/collection/16002.webp" data-fallback="https://raw.githubusercontent.com/SchaleDB/SchaleDB/main/images/student/collection/16002.webp" alt="Kotori" referrerpolicy="no-referrer">
     </header>
 
     <section class="intro" id="top">
-      <p class="eyebrow">A little self-reflection, Kivotos style</p>
-      <h1>Which students<br><span>feel like you?</span></h1>
-      <p class="intro-copy">Pick up to five Blue Archive students, rate how much you relate to each, and see your personal mix take shape.</p>
+      <h1>Which students<br><span>make up your personality?</span></h1>
+      <p class="intro-copy">Pick any number of students, rate how much you relate to each, and see your BA personality mix take shape.</p>
       <div class="intro-tags" aria-label="How it works">
         <span><b>01</b> Choose students</span><span class="tag-arrow" aria-hidden="true">→</span>
         <span><b>02</b> Set your ratings</span><span class="tag-arrow" aria-hidden="true">→</span>
@@ -32,7 +30,7 @@
     <div class="workspace">
       <section class="editor panel" aria-labelledby="editor-title">
         <div class="section-heading">
-          <div><p class="eyebrow">Build your lineup</p><h2 id="editor-title">Your students <span id="student-count" class="count">0 / 5</span></h2></div>
+          <div><p class="eyebrow">Build your lineup</p><h2 id="editor-title">Your students <span id="student-count" class="count">0</span></h2></div>
           <button id="reset-button" class="text-button" type="button">Reset</button>
         </div>
 
@@ -41,39 +39,29 @@
           <div class="search-wrap"><span class="search-icon" aria-hidden="true">⌕</span><input id="student-search" type="search" list="student-options" placeholder="Search for a student…" autocomplete="off"><datalist id="student-options"></datalist></div>
           <button id="add-button" class="add-button" type="submit"><span aria-hidden="true">＋</span> Add</button>
         </form>
-        <p id="form-hint" class="form-hint" aria-live="polite">Start typing a name, then select Add. You can choose up to five.</p>
+        <p id="form-hint" class="form-hint" aria-live="polite">Start typing a name, then select Add. Choose as many as you like.</p>
 
-        <div id="empty-state" class="empty-state">
-          <div class="empty-icon" aria-hidden="true">✧</div>
-          <strong>Your lineup is waiting</strong>
-          <span>Add a student above to get started.</span>
-        </div>
         <div id="student-list" class="student-list" aria-live="polite"></div>
         <div class="editor-foot"><span class="mini-sparkle" aria-hidden="true">✦</span> There’s no right answer. Go with your gut.</div>
       </section>
 
       <aside class="result panel" aria-labelledby="result-title">
         <div class="section-heading result-heading">
-          <div><p class="eyebrow">Your personality mix</p><h2 id="result-title">The results</h2></div>
-          <span class="live-badge"><span class="status-dot"></span> LIVE</span>
-        </div>
-        <div id="chart-empty" class="chart-empty">
-          <div class="chart-placeholder" aria-hidden="true"><span>?</span></div>
-          <p>Your chart will appear here</p>
-          <span>Add students and move the sliders to see your mix.</span>
+          <div class="result-title-wrap"><label class="eyebrow" for="chart-name">Chart title</label><div class="chart-title-line"><input id="chart-name" type="text" maxlength="40" value="Your" aria-label="Name to show at the start of the chart title"><h2 id="result-title">Your Blue Archive Personality Mix</h2></div></div>
+          <button id="save-png" class="save-button" type="button" disabled>Save PNG</button>
         </div>
         <div id="chart-content" class="chart-content" hidden>
-          <div class="chart-orbit" id="chart-orbit">
-            <div class="chart-wrap">
-              <svg id="pie-chart" viewBox="0 0 240 240" role="img" aria-label="Pie chart of your student personality mix"></svg>
-              <div class="chart-center" aria-hidden="true"><span>MATCH</span><strong id="match-total">0</strong><small>points</small></div>
+          <div class="chart-scroll">
+            <div class="chart-orbit" id="chart-orbit">
+              <div class="chart-wrap">
+                <svg id="pie-chart" viewBox="0 0 240 240" role="img" aria-label="Pie chart of your student personality mix"></svg>
+              </div>
+              <div id="orbit-students" class="orbit-students" aria-label="Selected students around the chart"></div>
             </div>
-            <div id="orbit-students" class="orbit-students" aria-label="Selected students around the chart"></div>
           </div>
           <div id="legend" class="legend" aria-label="Chart legend"></div>
           <div class="chart-note"><span aria-hidden="true">ⓘ</span><span>Each portrait and name sits at the midpoint of that student's pie slice.</span></div>
         </div>
-        <div class="result-bottom"><span class="result-star" aria-hidden="true">✦</span><span>Made by you, for you.</span></div>
       </aside>
     </div>
 
@@ -87,6 +75,6 @@
       <a href="https://yuzutrends.app/developers" target="_blank" rel="noreferrer">Roster and portraits: Yuzu Trends / SchaleDB ↗</a>
     </footer>
   </main>
-  <script src="app.js?v=3" defer></script>
+  <script src="app.js?v=4" defer></script>
 </body>
 </html>

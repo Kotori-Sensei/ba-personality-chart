@@ -1,4 +1,3 @@
-const MAX_STUDENTS = 5;
 const STORAGE_KEY = 'student-sync-v2';
 const LEGACY_STORAGE_KEY = 'student-sync-v1';
 const ROSTER_FEED = 'https://yuzutrends.app/txt/en/students.txt';
@@ -291,14 +290,14 @@ const studentOptions = document.querySelector('#student-options');
 const form = document.querySelector('#student-form');
 const hint = document.querySelector('#form-hint');
 const count = document.querySelector('#student-count');
-const emptyState = document.querySelector('#empty-state');
-const chartEmpty = document.querySelector('#chart-empty');
 const chartContent = document.querySelector('#chart-content');
 const pie = document.querySelector('#pie-chart');
 const orbitStudents = document.querySelector('#orbit-students');
 const legend = document.querySelector('#legend');
-const total = document.querySelector('#match-total');
 const addButton = document.querySelector('#add-button');
+const chartName = document.querySelector('#chart-name');
+const resultTitle = document.querySelector('#result-title');
+const savePngButton = document.querySelector('#save-png');
 let roster = [];
 let rosterReady = false;
 let selections = loadSelections();
@@ -316,7 +315,7 @@ function loadSelections() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY) || '[]');
     return Array.isArray(saved) ? saved.filter(item => item && (typeof item.name === 'string' || Number.isFinite(Number(item.id))))
-      .slice(0, MAX_STUDENTS).map(item => ({id:Number(item.id) || null, name:String(item.name || ''), score:clamp(Number(item.score) || 0)})) : [];
+      .map(item => ({id:Number(item.id) || null, name:String(item.name || ''), score:clamp(Number(item.score) || 0)})) : [];
   } catch { return []; }
 }
 function save() {
@@ -379,7 +378,6 @@ function addStudent(input) {
     || roster.find(student => normalizedTitle(student.name) === normalizedTitle(query));
   if (!match) { setHint('Choose a name from the student list to add it.', true); return false; }
   if (selections.some(item => item.id === match.id)) { setHint(`${studentLabel(match)} is already in your lineup.`, true); return false; }
-  if (selections.length >= MAX_STUDENTS) { setHint('Your lineup is full. Remove a student to add another.', true); return false; }
   selections.push({id:match.id, name:match.name, score:50});
   save(); render();
   setHint(`${studentLabel(match)} added. Set the slider to your similarity rating.`);
@@ -387,9 +385,8 @@ function addStudent(input) {
 }
 
 function render() {
-  count.textContent = `${selections.length} / ${MAX_STUDENTS}`;
-  addButton.disabled = selections.length >= MAX_STUDENTS || !rosterReady;
-  emptyState.hidden = selections.length > 0;
+  count.textContent = `${selections.length}`;
+  addButton.disabled = !rosterReady;
   studentList.innerHTML = selections.map((item, index) => {
     const color = COLORS[index % COLORS.length];
     const student = roster.find(candidate => candidate.id === item.id) || item;
@@ -427,8 +424,9 @@ function attachImageFallbacks(container) {
 }
 
 function renderOrbitStudents(sum) {
-  const orbitSize = orbitStudents.parentElement.clientWidth || 288;
-  const radius = Math.max(0, (orbitSize - 82) / 2);
+  const orbitSize = Math.max(288, Math.ceil((76 * selections.length) / Math.PI));
+  orbitStudents.parentElement.style.width = `${orbitSize}px`;
+  const radius = Math.max(0, (orbitSize - 86) / 2);
   let angle = -Math.PI / 2;
   orbitStudents.setAttribute('role', 'list');
   orbitStudents.innerHTML = selections.map((item, index) => {
@@ -452,11 +450,10 @@ function renderOrbitStudents(sum) {
 
 function renderChart() {
   const hasStudents = selections.length > 0;
-  chartEmpty.hidden = hasStudents;
   chartContent.hidden = !hasStudents;
+  savePngButton.disabled = !hasStudents;
   if (!hasStudents) return;
   const sum = selections.reduce((result, item) => result + item.score, 0);
-  total.textContent = sum;
   legend.innerHTML = selections.map((item, i) => {
     const portion = sum ? item.score / sum : 0;
     const student = roster.find(candidate => candidate.id === item.id) || item;
@@ -480,6 +477,19 @@ function renderChart() {
     path.setAttribute('class', 'pie-segment');
     path.setAttribute('aria-label', `${item.name}: ${Math.round(portion * 100)} percent`);
     pie.append(path);
+    const midpoint = angle + portion * Math.PI;
+    const labelX = 120 + 56 * Math.cos(midpoint);
+    const labelY = 120 + 56 * Math.sin(midpoint);
+    const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    label.setAttribute('x', labelX.toFixed(2));
+    label.setAttribute('y', labelY.toFixed(2));
+    label.setAttribute('class', 'slice-percent');
+    label.setAttribute('text-anchor', 'middle');
+    label.setAttribute('dominant-baseline', 'central');
+    label.setAttribute('transform', `rotate(90 ${labelX.toFixed(2)} ${labelY.toFixed(2)})`);
+    label.setAttribute('font-size', `${Math.max(5, Math.min(12, 12 - selections.length * 0.18))}px`);
+    label.textContent = `${Math.round(portion * 100)}%`;
+    pie.append(label);
     angle = next;
   });
 }
@@ -493,8 +503,11 @@ function sectorPath(cx, cy, radius, start, end) {
 
 form.addEventListener('submit', event => {
   event.preventDefault();
-  if (selections.length >= MAX_STUDENTS) { setHint('Your lineup is full. Remove a student to add another.', true); return; }
   if (addStudent(studentSearch.value)) studentSearch.value = '';
+});
+chartName.addEventListener('input', () => {
+  const name = chartName.value.trim();
+  resultTitle.textContent = `${name ? `${name} ` : ''}Blue Archive Personality Mix`;
 });
 document.querySelector('#reset-button').addEventListener('click', () => {
   selections = []; localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(LEGACY_STORAGE_KEY); studentSearch.value = ''; setHint('Your lineup is clear. Choose some students to begin.'); render();
@@ -514,3 +527,106 @@ async function loadRoster() {
 
 render();
 loadRoster();
+
+async function loadPortrait(student) {
+  if (!student.id) return null;
+  for (const url of [portraitUrl(student), fallbackPortraitUrl(student)]) {
+    try {
+      const image = new Image();
+      image.crossOrigin = 'anonymous';
+      image.src = url;
+      await new Promise((resolve, reject) => { image.onload = resolve; image.onerror = reject; });
+      return image;
+    } catch { /* Try the backup host, then use initials in the exported chart. */ }
+  }
+  return null;
+}
+
+function canvasRoundRect(context, x, y, width, height, radius) {
+  context.beginPath();
+  context.roundRect(x, y, width, height, radius);
+}
+
+async function exportChartPng() {
+  if (!selections.length) return;
+  savePngButton.disabled = true;
+  savePngButton.textContent = 'Preparing…';
+  try {
+    const entries = await Promise.all(selections.map(async (entry, index) => ({
+      ...entry,
+      label: studentLabel(roster.find(candidate => candidate.id === entry.id) || entry),
+      color: COLORS[index % COLORS.length],
+      image: await loadPortrait(roster.find(candidate => candidate.id === entry.id) || entry)
+    })));
+    const sum = selections.reduce((result, item) => result + item.score, 0);
+    const width = 1000;
+    const columns = width < 700 ? 1 : 2;
+    const rows = Math.ceil(entries.length / columns);
+    const height = 510 + rows * 66 + 48;
+    const canvas = document.createElement('canvas');
+    canvas.width = width * 2;
+    canvas.height = height * 2;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(2, 2);
+    ctx.fillStyle = '#f8f7fc'; ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = '#292643'; ctx.font = '700 30px Arial, sans-serif';
+    ctx.textAlign = 'center'; ctx.fillText(resultTitle.textContent, width / 2, 48, width - 80);
+
+    const cx = width / 2, cy = 270, radius = 176;
+    const startAt = -Math.PI / 2;
+    if (!sum) {
+      ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI * 2); ctx.fillStyle = '#e9e6f2'; ctx.fill();
+    } else {
+      let angle = startAt;
+      entries.forEach(entry => {
+        if (!entry.score) return;
+        const portion = entry.score / sum;
+        const end = angle + portion * Math.PI * 2;
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, radius, angle, end); ctx.closePath();
+        ctx.fillStyle = entry.color; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.stroke();
+        const middle = angle + (end - angle) / 2;
+        const labelRadius = Math.min(radius * 0.58, Math.max(radius * 0.35, radius * (0.62 - entries.length * 0.006)));
+        const text = `${Math.round(portion * 100)}%`;
+        ctx.fillStyle = '#fff'; ctx.font = `700 ${Math.max(8, Math.min(18, 18 - entries.length * 0.2))}px Arial, sans-serif`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(text, cx + Math.cos(middle) * labelRadius, cy + Math.sin(middle) * labelRadius);
+        angle = end;
+      });
+    }
+    const cellWidth = width / columns;
+    entries.forEach((entry, index) => {
+      const col = index % columns;
+      const row = Math.floor(index / columns);
+      const x = col * cellWidth + 24;
+      const y = 460 + row * 66;
+      ctx.fillStyle = '#fff'; canvasRoundRect(ctx, x, y, cellWidth - 48, 54, 12); ctx.fill();
+      ctx.fillStyle = entry.color; canvasRoundRect(ctx, x + 12, y + 10, 34, 34, 10); ctx.fill();
+      if (entry.image) {
+        ctx.save(); canvasRoundRect(ctx, x + 12, y + 10, 34, 34, 10); ctx.clip(); ctx.drawImage(entry.image, x + 12, y + 10, 34, 34); ctx.restore();
+      } else {
+        ctx.fillStyle = '#fff'; ctx.font = '700 10px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(initials(entry.label), x + 29, y + 27);
+      }
+      ctx.fillStyle = '#5d5974'; ctx.font = '700 14px Arial, sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      ctx.fillText(entry.label, x + 56, y + 27, cellWidth - 150);
+      ctx.fillStyle = '#37334f'; ctx.font = '700 14px Arial, sans-serif'; ctx.textAlign = 'right';
+      ctx.fillText(`${sum ? Math.round(entry.score / sum * 100) : 0}%`, x + cellWidth - 62, y + 27);
+    });
+    const anchor = document.createElement('a');
+    anchor.download = `${(chartName.value.trim() || 'your').replace(/[^a-z0-9-_]+/gi, '-').toLowerCase()}-blue-archive-personality-mix.png`;
+    anchor.href = canvas.toDataURL('image/png');
+    anchor.click();
+  } catch {
+    setHint('The PNG could not be created. Please try again.', true);
+  } finally {
+    savePngButton.disabled = !selections.length;
+    savePngButton.textContent = 'Save PNG';
+  }
+}
+
+savePngButton.addEventListener('click', exportChartPng);
+document.querySelectorAll('.top-kotori').forEach(image => image.addEventListener('error', () => {
+  const backup = image.dataset.fallback;
+  if (backup && image.src !== backup) { image.dataset.fallback = ''; image.src = backup; }
+  else image.remove();
+}));
