@@ -50,6 +50,27 @@ async function apiRequest(params) {
   } finally { clearTimeout(timeout); }
 }
 
+function choosePageImage(title, files) {
+  if (!files?.length) return null;
+  const normalizeFile = value => normalizedTitle(value.split(':').pop().replace(/\.[^.]+$/, '')).replace(/[^a-z0-9]/g, '');
+  const target = normalizeFile(title);
+  let best = null;
+  let bestScore = 0;
+  for (const file of files) {
+    const candidate = normalizeFile(file.title || '');
+    if (!candidate) continue;
+    let score = 0;
+    if (candidate === target) score = 100;
+    else if (candidate.startsWith(target)) score = 80;
+    else if (candidate.includes(target)) score = 60;
+    else if (target.startsWith(candidate) && candidate.length >= 5) score = 35;
+    if (score > bestScore) { best = file.title; bestScore = score; }
+  }
+  // PageImages is the preferred portrait. If that is absent, use a filename that
+  // clearly identifies the student instead of guessing among logos and UI art.
+  return best;
+}
+
 async function fetchWikiRoster() {
   const titles = [];
   let continuation = null;
@@ -70,16 +91,46 @@ async function fetchWikiRoster() {
 
   const images = new Map();
   let imageError = false;
-  // MediaWiki accepts batches of titles for PageImages; keep requests modest and sequential.
+  const imageFilesByStudent = new Map();
+  // PageImages gives the wiki's chosen page thumbnail. Also request page image
+  // files so there is a second route when a page has no PageImages thumbnail.
   for (let i=0; i<uniqueTitles.length; i+=50) {
     const batch = uniqueTitles.slice(i, i+50);
+    let data;
     try {
-      const data = await apiRequest({action:'query', prop:'pageimages', piprop:'thumbnail', pithumbsize:'240', redirects:'1', titles:batch.join('|')});
-      for (const page of Object.values(data.query?.pages || {})) {
-        const imageUrl = page.thumbnail?.source || page.original?.source;
-        if (imageUrl) images.set(normalizedTitle(page.title), imageUrl);
+      data = await apiRequest({action:'query', prop:'pageimages|images', piprop:'thumbnail', pithumbsize:'240', imlimit:'max', redirects:'1', titles:batch.join('|')});
+    } catch {
+      imageError = true;
+      try {
+        data = await apiRequest({action:'query', prop:'images', imlimit:'max', redirects:'1', titles:batch.join('|')});
+      } catch { imageError = true; continue; }
+    }
+    for (const page of Object.values(data.query?.pages || {})) {
+      const imageUrl = page.thumbnail?.source || page.original?.source;
+      if (imageUrl) images.set(normalizedTitle(page.title), imageUrl);
+      else {
+        const matchingFile = choosePageImage(page.title, page.images);
+        if (matchingFile) imageFilesByStudent.set(normalizedTitle(page.title), matchingFile);
       }
-    } catch { imageError = true; break; }
+    }
+  }
+
+  const fileTitles = [...new Set(imageFilesByStudent.values())];
+  const fileUrls = new Map();
+  for (let i=0; i<fileTitles.length; i+=50) {
+    const batch = fileTitles.slice(i, i+50);
+    try {
+      const data = await apiRequest({action:'query', prop:'imageinfo', iiprop:'url', iiurlwidth:'240', titles:batch.join('|')});
+      for (const page of Object.values(data.query?.pages || {})) {
+        const image = page.imageinfo?.[0];
+        const imageUrl = image?.thumburl || image?.url;
+        if (imageUrl) fileUrls.set(normalizedTitle(page.title), imageUrl);
+      }
+    } catch { imageError = true; }
+  }
+  for (const [student, fileTitle] of imageFilesByStudent) {
+    const imageUrl = fileUrls.get(normalizedTitle(fileTitle));
+    if (imageUrl && !images.has(student)) images.set(student, imageUrl);
   }
   return {students:uniqueTitles, images, imageError};
 }
@@ -105,7 +156,7 @@ function render() {
     const image = studentImages.get(normalizedTitle(item.name));
     const id = `score-${index}`;
     return `<article class="student-card">
-      <div class="student-avatar" style="background:${color}"><span aria-hidden="true">${escapeHtml(initials(item.name))}</span>${image ? `<img src="${escapeHtml(image)}" alt="" loading="lazy">` : ''}</div>
+      <div class="student-avatar" style="background:${color}"><span aria-hidden="true">${escapeHtml(initials(item.name))}</span>${image ? `<img src="${escapeHtml(image)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ''}</div>
       <div><div class="student-name">${safeName}</div><div class="student-label">Your similarity rating</div></div>
       <button type="button" class="remove-button" aria-label="Remove ${safeName}" data-remove="${index}">×</button>
       <div class="score-line"><label class="sr-only" for="${id}">How much you relate to ${safeName}</label><input class="slider" id="${id}" type="range" min="0" max="100" value="${item.score}" style="--fill:${item.score}%" data-score="${index}"><output class="score-value" for="${id}">${item.score}<small>%</small></output></div>
@@ -138,7 +189,7 @@ function renderOrbitStudents(sum) {
     const image = studentImages.get(normalizedTitle(item.name));
     const safeName = escapeHtml(item.name);
     return `<div class="orbit-student" role="listitem" style="left:${left}px;top:${top}px;--student-color:${color}" aria-label="${safeName}, ${portion}% of your chart">
-      <span class="orbit-avatar" style="background:${color}"><span aria-hidden="true">${escapeHtml(initials(item.name))}</span>${image ? `<img src="${escapeHtml(image)}" alt="" loading="lazy">` : ''}</span>
+      <span class="orbit-avatar" style="background:${color}"><span aria-hidden="true">${escapeHtml(initials(item.name))}</span>${image ? `<img src="${escapeHtml(image)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ''}</span>
       <span class="orbit-name">${safeName}</span>
     </div>`;
   }).join('');
