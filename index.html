@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#f5f3ff">
   <meta name="description" content="Choose Blue Archive students, rate how much you relate to each, and build your personal personality mix.">
   <title>Kotori's Blue Archive Personality Tool</title>
-  <link rel="stylesheet" href="styles.css?v=4">
+  <link rel="stylesheet" href="styles.css?v=5">
 </head>
 <body>
   <main class="page-shell">
@@ -19,7 +19,7 @@
 
     <section class="intro" id="top">
       <h1>Which students<br><span>make up your personality?</span></h1>
-      <p class="intro-copy">Pick any number of students, rate how much you relate to each, and see your BA personality mix take shape.</p>
+      <p class="intro-copy">You can also use this tool to make a Blue Archive related pie chart about whatever you want.</p>
       <div class="intro-tags" aria-label="How it works">
         <span><b>01</b> Choose students</span><span class="tag-arrow" aria-hidden="true">→</span>
         <span><b>02</b> Set your ratings</span><span class="tag-arrow" aria-hidden="true">→</span>
@@ -42,12 +42,11 @@
         <p id="form-hint" class="form-hint" aria-live="polite">Start typing a name, then select Add. Choose as many as you like.</p>
 
         <div id="student-list" class="student-list" aria-live="polite"></div>
-        <div class="editor-foot"><span class="mini-sparkle" aria-hidden="true">✦</span> There’s no right answer. Go with your gut.</div>
       </section>
 
       <aside class="result panel" aria-labelledby="result-title">
         <div class="section-heading result-heading">
-          <div class="result-title-wrap"><label class="eyebrow" for="chart-name">Chart title</label><div class="chart-title-line"><input id="chart-name" type="text" maxlength="40" value="Your" aria-label="Name to show at the start of the chart title"><h2 id="result-title">Your Blue Archive Personality Mix</h2></div></div>
+          <div class="result-title-wrap"><label class="eyebrow" for="chart-name">Chart title</label><div class="chart-title-line"><input id="chart-name" type="text" maxlength="100" value="Your Blue Archive Personality Mix" aria-label="Customize the full chart title"><h2 id="result-title">Your Blue Archive Personality Mix</h2></div></div>
           <button id="save-png" class="save-button" type="button" disabled>Save PNG</button>
         </div>
         <div id="chart-content" class="chart-content" hidden>
@@ -74,6 +73,6 @@
       <a href="https://yuzutrends.app/developers" target="_blank" rel="noreferrer">Roster and portraits: Yuzu Trends / SchaleDB ↗</a>
     </footer>
   </main>
-  <script src="app.js?v=4" defer></script>
+  <script src="app.js?v=5" defer></script>
 </body>
 </html>
