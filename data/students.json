@@ -1,0 +1,1119 @@
+{
+  "source": "Yuzu Trends student feed (SchaleDB)",
+  "rosterFeed": "https://yuzutrends.app/txt/en/students.txt",
+  "snapshotDate": "2026-10-16",
+  "students": [
+    {
+      "id": 10000,
+      "name": "Aru"
+    },
+    {
+      "id": 10001,
+      "name": "Eimi"
+    },
+    {
+      "id": 10002,
+      "name": "Haruna"
+    },
+    {
+      "id": 10003,
+      "name": "Hifumi"
+    },
+    {
+      "id": 10004,
+      "name": "Hina"
+    },
+    {
+      "id": 10005,
+      "name": "Hoshino"
+    },
+    {
+      "id": 10006,
+      "name": "Iori"
+    },
+    {
+      "id": 10007,
+      "name": "Maki"
+    },
+    {
+      "id": 10008,
+      "name": "Neru"
+    },
+    {
+      "id": 10009,
+      "name": "Izumi"
+    },
+    {
+      "id": 10010,
+      "name": "Shiroko"
+    },
+    {
+      "id": 10011,
+      "name": "Shun"
+    },
+    {
+      "id": 10012,
+      "name": "Sumire"
+    },
+    {
+      "id": 10013,
+      "name": "Tsurugi"
+    },
+    {
+      "id": 10014,
+      "name": "Izuna"
+    },
+    {
+      "id": 10015,
+      "name": "Aris"
+    },
+    {
+      "id": 10016,
+      "name": "Midori"
+    },
+    {
+      "id": 10017,
+      "name": "Cherino"
+    },
+    {
+      "id": 10018,
+      "name": "Yuzu"
+    },
+    {
+      "id": 10019,
+      "name": "Azusa"
+    },
+    {
+      "id": 10020,
+      "name": "Koharu"
+    },
+    {
+      "id": 10021,
+      "name": "Azusa (Swimsuit)"
+    },
+    {
+      "id": 10022,
+      "name": "Hina (Swimsuit)"
+    },
+    {
+      "id": 10023,
+      "name": "Iori (Swimsuit)"
+    },
+    {
+      "id": 10024,
+      "name": "Shiroko (Cycling)"
+    },
+    {
+      "id": 10025,
+      "name": "Shun (Small)"
+    },
+    {
+      "id": 10026,
+      "name": "Neru (Bunny)"
+    },
+    {
+      "id": 10027,
+      "name": "Karin (Bunny)"
+    },
+    {
+      "id": 10028,
+      "name": "Asuna (Bunny)"
+    },
+    {
+      "id": 10029,
+      "name": "Natsu"
+    },
+    {
+      "id": 10030,
+      "name": "Chinatsu (Hot Spring)"
+    },
+    {
+      "id": 10031,
+      "name": "Aru (New Year)"
+    },
+    {
+      "id": 10032,
+      "name": "Mutsuki (New Year)"
+    },
+    {
+      "id": 10033,
+      "name": "Wakamo"
+    },
+    {
+      "id": 10034,
+      "name": "Mimori"
+    },
+    {
+      "id": 10035,
+      "name": "Ui"
+    },
+    {
+      "id": 10036,
+      "name": "Hinata"
+    },
+    {
+      "id": 10037,
+      "name": "Marina"
+    },
+    {
+      "id": 10038,
+      "name": "Miyako"
+    },
+    {
+      "id": 10039,
+      "name": "Miyu"
+    },
+    {
+      "id": 10040,
+      "name": "Tsukuyo"
+    },
+    {
+      "id": 10041,
+      "name": "Misaki"
+    },
+    {
+      "id": 10042,
+      "name": "Atsuko"
+    },
+    {
+      "id": 10043,
+      "name": "Wakamo (Swimsuit)"
+    },
+    {
+      "id": 10044,
+      "name": "Nonomi (Swimsuit)"
+    },
+    {
+      "id": 10045,
+      "name": "Hoshino (Swimsuit)"
+    },
+    {
+      "id": 10046,
+      "name": "Izuna (Swimsuit)"
+    },
+    {
+      "id": 10047,
+      "name": "Chise (Swimsuit)"
+    },
+    {
+      "id": 10048,
+      "name": "Saori"
+    },
+    {
+      "id": 10049,
+      "name": "Kazusa"
+    },
+    {
+      "id": 10050,
+      "name": "Kokona"
+    },
+    {
+      "id": 10051,
+      "name": "Utaha (Cheer Squad)"
+    },
+    {
+      "id": 10052,
+      "name": "Noa"
+    },
+    {
+      "id": 10053,
+      "name": "Yuuka (Track)"
+    },
+    {
+      "id": 10054,
+      "name": "Mari (Track)"
+    },
+    {
+      "id": 10055,
+      "name": "Shigure"
+    },
+    {
+      "id": 10056,
+      "name": "Serina (Christmas)"
+    },
+    {
+      "id": 10057,
+      "name": "Haruna (New Year)"
+    },
+    {
+      "id": 10058,
+      "name": "Mine"
+    },
+    {
+      "id": 10059,
+      "name": "Mika"
+    },
+    {
+      "id": 10060,
+      "name": "Megu"
+    },
+    {
+      "id": 10061,
+      "name": "Sakurako"
+    },
+    {
+      "id": 10062,
+      "name": "Toki"
+    },
+    {
+      "id": 10063,
+      "name": "Koyuki"
+    },
+    {
+      "id": 10064,
+      "name": "Kayoko (New Year)"
+    },
+    {
+      "id": 10065,
+      "name": "Kaho"
+    },
+    {
+      "id": 10066,
+      "name": "Aris (Maid)"
+    },
+    {
+      "id": 10067,
+      "name": "Toki (Bunny)"
+    },
+    {
+      "id": 10068,
+      "name": "Reisa"
+    },
+    {
+      "id": 10069,
+      "name": "Rumi"
+    },
+    {
+      "id": 10070,
+      "name": "Mina"
+    },
+    {
+      "id": 10071,
+      "name": "Miyako (Swimsuit)"
+    },
+    {
+      "id": 10072,
+      "name": "Saki (Swimsuit)"
+    },
+    {
+      "id": 10073,
+      "name": "Ui (Swimsuit)"
+    },
+    {
+      "id": 10074,
+      "name": "Hanako (Swimsuit)"
+    },
+    {
+      "id": 10075,
+      "name": "Meru"
+    },
+    {
+      "id": 10076,
+      "name": "Kotori (Cheer Squad)"
+    },
+    {
+      "id": 10077,
+      "name": "Ichika"
+    },
+    {
+      "id": 10078,
+      "name": "Kasumi"
+    },
+    {
+      "id": 10079,
+      "name": "Misaka Mikoto"
+    },
+    {
+      "id": 10080,
+      "name": "Shokuhou Misaki"
+    },
+    {
+      "id": 10081,
+      "name": "Yukari"
+    },
+    {
+      "id": 10082,
+      "name": "Renge"
+    },
+    {
+      "id": 10083,
+      "name": "Kikyou"
+    },
+    {
+      "id": 10084,
+      "name": "Kotama (Camp)"
+    },
+    {
+      "id": 10085,
+      "name": "Hare (Camp)"
+    },
+    {
+      "id": 10086,
+      "name": "Hina (Dress)"
+    },
+    {
+      "id": 10087,
+      "name": "Ako (Dress)"
+    },
+    {
+      "id": 10088,
+      "name": "Kayoko (Dress)"
+    },
+    {
+      "id": 10089,
+      "name": "Aru (Dress)"
+    },
+    {
+      "id": 10090,
+      "name": "Umika"
+    },
+    {
+      "id": 10091,
+      "name": "Kazusa (Band)"
+    },
+    {
+      "id": 10092,
+      "name": "Yoshimi (Band)"
+    },
+    {
+      "id": 10093,
+      "name": "Kirara"
+    },
+    {
+      "id": 10094,
+      "name": "Momoi (Maid)"
+    },
+    {
+      "id": 10095,
+      "name": "Midori (Maid)"
+    },
+    {
+      "id": 10096,
+      "name": "Kanna (Swimsuit)"
+    },
+    {
+      "id": 10097,
+      "name": "Moe (Swimsuit)"
+    },
+    {
+      "id": 10098,
+      "name": "Hoshino (Armed)"
+    },
+    {
+      "id": 10099,
+      "name": "Hoshino (Armed)"
+    },
+    {
+      "id": 10100,
+      "name": "Shiroko*Terror"
+    },
+    {
+      "id": 10101,
+      "name": "Saori (Swimsuit)"
+    },
+    {
+      "id": 10102,
+      "name": "Hiyori (Swimsuit)"
+    },
+    {
+      "id": 10103,
+      "name": "Marina (Qipao)"
+    },
+    {
+      "id": 10104,
+      "name": "Reijo"
+    },
+    {
+      "id": 10105,
+      "name": "Mari (Pop Idol)"
+    },
+    {
+      "id": 10106,
+      "name": "Sakurako (Pop Idol)"
+    },
+    {
+      "id": 10107,
+      "name": "Chiaki"
+    },
+    {
+      "id": 10108,
+      "name": "Yuuka (Pajamas)"
+    },
+    {
+      "id": 10109,
+      "name": "Noa (Pajamas)"
+    },
+    {
+      "id": 10110,
+      "name": "Seia"
+    },
+    {
+      "id": 10111,
+      "name": "Neru (School)"
+    },
+    {
+      "id": 10112,
+      "name": "Asuna (School)"
+    },
+    {
+      "id": 10113,
+      "name": "Sena (Casual)"
+    },
+    {
+      "id": 10114,
+      "name": "Juri (Part-Timer)"
+    },
+    {
+      "id": 10115,
+      "name": "Rei"
+    },
+    {
+      "id": 10116,
+      "name": "Saori (Dress)"
+    },
+    {
+      "id": 10117,
+      "name": "Hikari"
+    },
+    {
+      "id": 10118,
+      "name": "Nozomi"
+    },
+    {
+      "id": 10119,
+      "name": "Nagusa"
+    },
+    {
+      "id": 10120,
+      "name": "Natsu (Band)"
+    },
+    {
+      "id": 10121,
+      "name": "Yukari (Swimsuit)"
+    },
+    {
+      "id": 10122,
+      "name": "Mika (Swimsuit)"
+    },
+    {
+      "id": 10123,
+      "name": "Seia (Swimsuit)"
+    },
+    {
+      "id": 10124,
+      "name": "Hasumi (Swimsuit)"
+    },
+    {
+      "id": 10125,
+      "name": "Eri"
+    },
+    {
+      "id": 10126,
+      "name": "Kanoe"
+    },
+    {
+      "id": 10127,
+      "name": "Miyo"
+    },
+    {
+      "id": 10128,
+      "name": "Fuyu"
+    },
+    {
+      "id": 10129,
+      "name": "Suzumi (Magical)"
+    },
+    {
+      "id": 10130,
+      "name": "Subaru"
+    },
+    {
+      "id": 10131,
+      "name": "Takane"
+    },
+    {
+      "id": 10132,
+      "name": "Tsukuyo (Dress)"
+    },
+    {
+      "id": 10133,
+      "name": "Rio (Armed)"
+    },
+    {
+      "id": 10134,
+      "name": "Aris (Armed)"
+    },
+    {
+      "id": 10135,
+      "name": "Kei"
+    },
+    {
+      "id": 10136,
+      "name": "Eimi (Armed)"
+    },
+    {
+      "id": 10137,
+      "name": "Konoka"
+    },
+    {
+      "id": 10138,
+      "name": "Rena"
+    },
+    {
+      "id": 10139,
+      "name": "Niko"
+    },
+    {
+      "id": 10140,
+      "name": "Kurumi"
+    },
+    {
+      "id": 10141,
+      "name": "Haruka (Dress)"
+    },
+    {
+      "id": 10142,
+      "name": "Nagusa (Swimsuit)"
+    },
+    {
+      "id": 10143,
+      "name": "Shun (Swimsuit)"
+    },
+    {
+      "id": 10144,
+      "name": "Shunling (Swimsuit)"
+    },
+    {
+      "id": 10145,
+      "name": "Kisaki (Swimsuit)"
+    },
+    {
+      "id": 10146,
+      "name": "Makoto (Swimsuit)"
+    },
+    {
+      "id": 10147,
+      "name": "Satsuki (Swimsuit)"
+    },
+    {
+      "id": 10148,
+      "name": "Iroha (Swimsuit)"
+    },
+    {
+      "id": 10149,
+      "name": "Kokoro"
+    },
+    {
+      "id": 10150,
+      "name": "Kotone"
+    },
+    {
+      "id": 10151,
+      "name": "Anna"
+    },
+    {
+      "id": 10152,
+      "name": "Tsumugi"
+    },
+    {
+      "id": 13000,
+      "name": "Akane"
+    },
+    {
+      "id": 13001,
+      "name": "Chise"
+    },
+    {
+      "id": 13002,
+      "name": "Akari"
+    },
+    {
+      "id": 13003,
+      "name": "Hasumi"
+    },
+    {
+      "id": 13004,
+      "name": "Nonomi"
+    },
+    {
+      "id": 13005,
+      "name": "Kayoko"
+    },
+    {
+      "id": 13006,
+      "name": "Mutsuki"
+    },
+    {
+      "id": 13007,
+      "name": "Junko"
+    },
+    {
+      "id": 13008,
+      "name": "Serika"
+    },
+    {
+      "id": 13009,
+      "name": "Tsubaki"
+    },
+    {
+      "id": 13010,
+      "name": "Yuuka"
+    },
+    {
+      "id": 13011,
+      "name": "Momoi"
+    },
+    {
+      "id": 13012,
+      "name": "Kirino"
+    },
+    {
+      "id": 13013,
+      "name": "Momiji"
+    },
+    {
+      "id": 13014,
+      "name": "Renge (Swimsuit)"
+    },
+    {
+      "id": 16000,
+      "name": "Haruka"
+    },
+    {
+      "id": 16001,
+      "name": "Asuna"
+    },
+    {
+      "id": 16002,
+      "name": "Kotori"
+    },
+    {
+      "id": 16003,
+      "name": "Suzumi"
+    },
+    {
+      "id": 16004,
+      "name": "Pina"
+    },
+    {
+      "id": 16005,
+      "name": "Tsurugi (Swimsuit)"
+    },
+    {
+      "id": 16006,
+      "name": "Izumi (Swimsuit)"
+    },
+    {
+      "id": 16007,
+      "name": "Tomoe"
+    },
+    {
+      "id": 16008,
+      "name": "Fubuki"
+    },
+    {
+      "id": 16009,
+      "name": "Michiru"
+    },
+    {
+      "id": 16010,
+      "name": "Hibiki (Cheer Squad)"
+    },
+    {
+      "id": 16011,
+      "name": "Hasumi (Track)"
+    },
+    {
+      "id": 16012,
+      "name": "Junko (New Year)"
+    },
+    {
+      "id": 16013,
+      "name": "Koharu (Swimsuit)"
+    },
+    {
+      "id": 16014,
+      "name": "Ibuki"
+    },
+    {
+      "id": 16015,
+      "name": "Airi (Band)"
+    },
+    {
+      "id": 16016,
+      "name": "Mine (Pop Idol)"
+    },
+    {
+      "id": 16017,
+      "name": "Aoba"
+    },
+    {
+      "id": 16018,
+      "name": "Rabu"
+    },
+    {
+      "id": 16019,
+      "name": "Toki (Armed)"
+    },
+    {
+      "id": 16020,
+      "name": "Otogi"
+    },
+    {
+      "id": 20000,
+      "name": "Hibiki"
+    },
+    {
+      "id": 20001,
+      "name": "Karin"
+    },
+    {
+      "id": 20002,
+      "name": "Saya"
+    },
+    {
+      "id": 20003,
+      "name": "Mashiro"
+    },
+    {
+      "id": 20004,
+      "name": "Mashiro (Swimsuit)"
+    },
+    {
+      "id": 20005,
+      "name": "Hifumi (Swimsuit)"
+    },
+    {
+      "id": 20006,
+      "name": "Saya (Casual)"
+    },
+    {
+      "id": 20007,
+      "name": "Hatsune Miku"
+    },
+    {
+      "id": 20008,
+      "name": "Ako"
+    },
+    {
+      "id": 20009,
+      "name": "Cherino (Hot Spring)"
+    },
+    {
+      "id": 20010,
+      "name": "Nodoka (Hot Spring)"
+    },
+    {
+      "id": 20011,
+      "name": "Serika (New Year)"
+    },
+    {
+      "id": 20012,
+      "name": "Sena"
+    },
+    {
+      "id": 20013,
+      "name": "Chihiro"
+    },
+    {
+      "id": 20014,
+      "name": "Saki"
+    },
+    {
+      "id": 20015,
+      "name": "Kaede"
+    },
+    {
+      "id": 20016,
+      "name": "Iroha"
+    },
+    {
+      "id": 20017,
+      "name": "Hiyori"
+    },
+    {
+      "id": 20018,
+      "name": "Moe"
+    },
+    {
+      "id": 20019,
+      "name": "Akane (Bunny)"
+    },
+    {
+      "id": 20020,
+      "name": "Himari"
+    },
+    {
+      "id": 20021,
+      "name": "Hanae (Christmas)"
+    },
+    {
+      "id": 20022,
+      "name": "Fuuka (New Year)"
+    },
+    {
+      "id": 20023,
+      "name": "Kanna"
+    },
+    {
+      "id": 20024,
+      "name": "Nagisa"
+    },
+    {
+      "id": 20025,
+      "name": "Haruka (New Year)"
+    },
+    {
+      "id": 20026,
+      "name": "Minori"
+    },
+    {
+      "id": 20027,
+      "name": "Shiroko (Swimsuit)"
+    },
+    {
+      "id": 20028,
+      "name": "Hinata (Swimsuit)"
+    },
+    {
+      "id": 20029,
+      "name": "Mimori (Swimsuit)"
+    },
+    {
+      "id": 20030,
+      "name": "Haruna (Track)"
+    },
+    {
+      "id": 20031,
+      "name": "Shigure (Hot Spring)"
+    },
+    {
+      "id": 20032,
+      "name": "Eimi (Swimsuit)"
+    },
+    {
+      "id": 20033,
+      "name": "Makoto"
+    },
+    {
+      "id": 20034,
+      "name": "Akari (New Year)"
+    },
+    {
+      "id": 20035,
+      "name": "Tsubaki (Guide)"
+    },
+    {
+      "id": 20036,
+      "name": "Serika (Swimsuit)"
+    },
+    {
+      "id": 20037,
+      "name": "Fubuki (Swimsuit)"
+    },
+    {
+      "id": 20038,
+      "name": "Tomoe (Qipao)"
+    },
+    {
+      "id": 20039,
+      "name": "Kisaki"
+    },
+    {
+      "id": 20040,
+      "name": "Satsuki"
+    },
+    {
+      "id": 20041,
+      "name": "Rio"
+    },
+    {
+      "id": 20042,
+      "name": "Maki (Camp)"
+    },
+    {
+      "id": 20043,
+      "name": "Izumi (New Year)"
+    },
+    {
+      "id": 20044,
+      "name": "Sumire (Part-Timer)"
+    },
+    {
+      "id": 20045,
+      "name": "Pina (Guide)"
+    },
+    {
+      "id": 20046,
+      "name": "Niya"
+    },
+    {
+      "id": 20047,
+      "name": "Kikyou (Swimsuit)"
+    },
+    {
+      "id": 20048,
+      "name": "Nagisa (Swimsuit)"
+    },
+    {
+      "id": 20049,
+      "name": "Misaki (Swimsuit)"
+    },
+    {
+      "id": 20050,
+      "name": "Ritsu"
+    },
+    {
+      "id": 20051,
+      "name": "Reisa (Magical)"
+    },
+    {
+      "id": 20052,
+      "name": "Yakumo"
+    },
+    {
+      "id": 20053,
+      "name": "Michiru (Dress)"
+    },
+    {
+      "id": 20054,
+      "name": "Himari (Armed)"
+    },
+    {
+      "id": 20055,
+      "name": "Yuzu (Armed)"
+    },
+    {
+      "id": 20056,
+      "name": "Koyuki (Pajamas)"
+    },
+    {
+      "id": 20057,
+      "name": "Akane (School)"
+    },
+    {
+      "id": 20058,
+      "name": "Erika"
+    },
+    {
+      "id": 20059,
+      "name": "Mutsuki (Dress)"
+    },
+    {
+      "id": 20060,
+      "name": "Ibuki (Swimsuit)"
+    },
+    {
+      "id": 20061,
+      "name": "Kasumi (Swimsuit)"
+    },
+    {
+      "id": 20062,
+      "name": "Erina"
+    },
+    {
+      "id": 23000,
+      "name": "Airi"
+    },
+    {
+      "id": 23001,
+      "name": "Fuuka"
+    },
+    {
+      "id": 23002,
+      "name": "Hanae"
+    },
+    {
+      "id": 23003,
+      "name": "Hare"
+    },
+    {
+      "id": 23004,
+      "name": "Utaha"
+    },
+    {
+      "id": 23005,
+      "name": "Ayane"
+    },
+    {
+      "id": 23006,
+      "name": "Shizuko"
+    },
+    {
+      "id": 23007,
+      "name": "Hanako"
+    },
+    {
+      "id": 23008,
+      "name": "Mari"
+    },
+    {
+      "id": 26000,
+      "name": "Chinatsu"
+    },
+    {
+      "id": 26001,
+      "name": "Kotama"
+    },
+    {
+      "id": 26002,
+      "name": "Juri"
+    },
+    {
+      "id": 26003,
+      "name": "Serina"
+    },
+    {
+      "id": 26004,
+      "name": "Shimiko"
+    },
+    {
+      "id": 26005,
+      "name": "Yoshimi"
+    },
+    {
+      "id": 26006,
+      "name": "Nodoka"
+    },
+    {
+      "id": 26007,
+      "name": "Ayane (Swimsuit)"
+    },
+    {
+      "id": 26008,
+      "name": "Shizuko (Swimsuit)"
+    },
+    {
+      "id": 26009,
+      "name": "Yuzu (Maid)"
+    },
+    {
+      "id": 26010,
+      "name": "Miyu (Swimsuit)"
+    },
+    {
+      "id": 26011,
+      "name": "Saten Ruiko"
+    },
+    {
+      "id": 26012,
+      "name": "Kirino (Swimsuit)"
+    },
+    {
+      "id": 26013,
+      "name": "Atsuko (Swimsuit)"
+    },
+    {
+      "id": 26014,
+      "name": "Karin (School)"
+    },
+    {
+      "id": 26015,
+      "name": "Ichika (Swimsuit)"
+    },
+    {
+      "id": 26016,
+      "name": "Chiaki (Swimsuit)"
+    }
+  ]
+}
